@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Minecraft Timing Generator</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f172a; color: #e5e7eb; margin: 0; padding: 20px; }
+    .card { max-width: 700px; margin: auto; background: #020617; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+    h1 { text-align: center; }
+    button { padding: 12px 18px; border: none; border-radius: 10px; background: #22c55e; color: #022c22; font-weight: bold; cursor: pointer; }
+    button:hover { opacity: 0.9; }
+    textarea { width: 100%; height: 220px; border-radius: 10px; padding: 10px; background: #020617; color: #e5e7eb; border: 1px solid #334155; }
+    .output { margin-top: 20px; padding: 15px; background: #020617; border-radius: 10px; border: 1px solid #334155; }
+    .small { font-size: 12px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⛏️ Minecraft Timing Generator</h1>
+
+    <p class="small">EDIT THESE TIMES DAILY (only you edit this file)</p>
+    <textarea id="schedule">
+# Example Format:
+# DAY | TIME RANGE | MODE
+Monday | 5:00 PM - 7:00 PM | Survival SMP
+Tuesday | 6:00 PM - 8:00 PM | SkyBlock
+Wednesday | 4:00 PM - 6:00 PM | PvP Practice
+Thursday | 5:30 PM - 7:30 PM | Modded SMP
+Friday | 6:00 PM - 9:00 PM | Event Night
+Saturday | 3:00 PM - 9:00 PM | Long SMP
+Sunday | 2:00 PM - 6:00 PM | Chill SMP
+    </textarea>
+
+    <br /><br />
+    <button onclick="generateTiming()">🎮 Generate Today's Minecraft Timing</button>
+
+    <div class="output" id="result">
+      Click generate to see today's Minecraft timing.
+    </div>
+  </div>
+
+  <script>
+    function generateTiming() {
+      const text = document.getElementById('schedule').value;
+      const lines = text.split('\n').filter(l => l.includes('|'));
+
+      const today = new Date().toLocaleString('en-US', { weekday: 'long' });
+      let found = false;
+
+      for (let line of lines) {
+        const parts = line.split('|').map(p => p.trim());
+        if (parts[0].toLowerCase() === today.toLowerCase()) {
+          document.getElementById('result').innerHTML = `
+            <h2>📅 ${today}</h2>
+            <p><b>🕒 Time:</b> ${parts[1]}</p>
+            <p><b>🎯 Mode:</b> ${parts[2]}</p>
+            <p>✅ Tell your friends to join at this time!</p>
+          `;
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        document.getElementById('result').innerHTML = `
+          <h2>📅 ${today}</h2>
+          <p>❌ No timing set for today.</p>
+          <p>Ask admin to update the schedule.</p>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
