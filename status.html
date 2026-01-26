@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SMP Hub • Server Status</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: #e5e7eb;
+      padding: 20px;
+    }
+    .card {
+      max-width: 900px;
+      margin: auto;
+      background: #020617;
+      padding: 25px;
+      border-radius: 18px;
+      border: 2px solid #38bdf8;
+      box-shadow: 0 20px 40px rgba(0,0,0,.7);
+    }
+    h1 {
+      text-align: center;
+      color: #38bdf8;
+      margin-bottom: 20px;
+    }
+    .server {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .name {
+      font-size: 11px;
+    }
+    .status {
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: bold;
+    }
+    .online {
+      background: #052e16;
+      color: #22c55e;
+      border: 1px solid #22c55e;
+    }
+    .offline {
+      background: #450a0a;
+      color: #ef4444;
+      border: 1px solid #ef4444;
+    }
+    .maintenance {
+      background: #422006;
+      color: #f59e0b;
+      border: 1px solid #f59e0b;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 9px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>📡 SMP Hub Status</h1>
+
+    <div class="server">
+      <div class="name">Legion Of Dominion</div>
+      <div class="status online">🟢 ONLINE</div>
+    </div>
+
+    <div class="server">
+      <div class="name">ShadowCraft SMP</div>
+      <div class="status offline">🔴 OFFLINE</div>
+    </div>
+
+    <div class="server">
+      <div class="name">NovaVerse SMP</div>
+      <div class="status maintenance">🟡 MAINTENANCE</div>
+    </div>
+
+    <div class="footer">
+      Auto-updated by admins • Not real-time ping
+    </div>
+  </div>
+
+</body>
+</html>
