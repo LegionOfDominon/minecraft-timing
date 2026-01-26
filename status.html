@@ -19,85 +19,63 @@ body{
   border-radius:18px;
   border:2px solid #22c55e;
 }
-nav{
-  text-align:center;
-  margin-bottom:15px;
-}
-nav a{
-  color:#22c55e;
-  margin:0 8px;
-  font-size:10px;
-  text-decoration:none;
-}
-h1{text-align:center;color:#22c55e;}
-.status{
-  padding:15px;
-  border-radius:12px;
-  border:1px solid #22c55e;
-  margin-top:15px;
-}
-.admin{
-  margin-top:20px;
-  border-top:1px dashed #334155;
-  padding-top:15px;
-  font-size:10px;
-}
 button{
-  margin-top:10px;
-  padding:10px;
-  width:100%;
-  border:none;
-  border-radius:10px;
-  background:#22c55e;
-  font-weight:bold;
-  cursor:pointer;
+  margin-top:10px;padding:12px;width:100%;
+  border:none;border-radius:10px;background:#22c55e;
 }
 </style>
 </head>
 <body>
 
-<div class="card">
-<nav>
-  <a href="index.html">Home</a>
-  <a href="timing.html">Timings</a>
-  <a href="status.html">Status</a>
-  <a href="rules.html">Rules</a>
-</nav>
-
-<h1>🟢 SMP Status</h1>
-
-<div class="status" id="statusBox">
-Checking server status...
+<div id="deviceModal" style="display:none;position:fixed;inset:0;background:#020617;z-index:9999;align-items:center;justify-content:center;">
+  <div style="border:2px solid #22c55e;padding:20px;border-radius:14px;text-align:center;">
+    <h3>Select Device</h3><br>
+    <button onclick="setDevice('mobile')">📱 Mobile</button><br><br>
+    <button onclick="setDevice('pc')">🖥 PC</button>
+  </div>
 </div>
 
-<div class="admin">
-<b>Admin Controls</b><br><br>
-<label>
-<input type="checkbox" id="holidayToggle">
- Today is a Holiday / No School
-</label>
-<button onclick="saveHoliday()">Save</button>
+<div class="card">
+<h1>🟢 SMP Status</h1>
+<div id="statusBox"></div>
+
+<button onclick="adminLogin()">🔐 Admin Login</button>
+
+<div id="adminPanel" style="display:none;">
+<label><input type="checkbox" id="holiday"> Holiday / No School</label>
+<button onclick="save()">Save</button>
 </div>
 </div>
 
 <script>
-function loadStatus(){
-  const holiday = localStorage.getItem("holiday") === "true";
-  document.getElementById("holidayToggle").checked = holiday;
-
-  document.getElementById("statusBox").innerHTML = holiday
-    ? "🎉 Holiday Mode ON<br>Sunday timings will be followed."
-    : "📚 School Day<br>Normal weekday timings apply.";
+const PASS="10009000XC";
+function adminLogin(){
+  if(prompt("Admin Password")==PASS){
+    sessionStorage.setItem("admin","1");
+    location.reload();
+  }else alert("Wrong password");
 }
-
-function saveHoliday(){
-  const checked = document.getElementById("holidayToggle").checked;
-  localStorage.setItem("holiday", checked);
-  loadStatus();
+function setDevice(t){localStorage.setItem("device",t);location.reload();}
+function applyDevice(){
+  const d=localStorage.getItem("device");
+  if(!d){deviceModal.style.display="flex";return;}
+  document.body.classList.add(d);
 }
+applyDevice();
 
-loadStatus();
+function load(){
+  const h=localStorage.getItem("holiday")==="true";
+  statusBox.innerHTML=h?"🎉 Holiday Mode ON":"📚 Normal School Day";
+  if(sessionStorage.getItem("admin")){
+    adminPanel.style.display="block";
+    holiday.checked=h;
+  }
+}
+function save(){
+  localStorage.setItem("holiday",holiday.checked);
+  load();
+}
+load();
 </script>
-
 </body>
 </html>
