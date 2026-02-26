@@ -10,6 +10,7 @@ body{
   background:linear-gradient(135deg,#0f172a,#020617);
   color:#e5e7eb;
   padding:20px;
+  transition:0.3s;
 }
 .card{
   max-width:760px;
@@ -24,15 +25,35 @@ textarea{
   border-radius:10px;border:1px solid #334155;padding:10px;
 }
 button{
-  margin-top:15px;width:100%;padding:14px;
+  margin-top:12px;width:100%;padding:12px;
   border:none;border-radius:10px;
   background:#22c55e;font-weight:bold;
+  cursor:pointer;
+}
+.admin-panel{
+  margin-top:30px;
+  padding:15px;
+  border:2px solid #22c55e;
+  border-radius:12px;
+}
+.panel-card{
+  background:#0f172a;
+  padding:12px;
+  margin-bottom:15px;
+  border-radius:10px;
 }
 body.mobile textarea{height:260px;font-size:14px}
+.status-box{
+  margin-top:20px;
+  padding:12px;
+  border-radius:10px;
+  background:#111827;
+}
 </style>
 </head>
 <body>
 
+<!-- DEVICE SELECT -->
 <div id="deviceModal" style="display:none;position:fixed;inset:0;background:#020617;z-index:9999;align-items:center;justify-content:center;">
   <div style="border:2px solid #22c55e;padding:20px;border-radius:14px;text-align:center;">
     <h3>Select Device</h3><br>
@@ -54,12 +75,48 @@ Saturday | 3:30 PM - 6:00 PM | Any SMP
 Sunday | 11:00 AM - 1:00 PM | Any SMP
 </textarea>
 
-<button onclick="generate()">Generate</button>
-<div id="result"></div>
+<button onclick="generate()">Generate Today's Timing</button>
+<button onclick="adminLogin()">🔐 Admin Login</button>
+
+<div id="result" class="status-box"></div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel" class="admin-panel" style="display:none;">
+<h2>Admin Panel</h2>
+
+<div class="panel-card">
+<h3>Holiday / No School</h3>
+<button onclick="toggleHoliday()">Toggle Holiday</button>
+<p id="holidayStatus"></p>
+</div>
+
+<div class="panel-card">
+<h3>Exam Study Time</h3>
+<button onclick="toggleStudy()">Toggle Study Time</button>
+<p id="studyStatus"></p>
+</div>
+
+<div class="panel-card">
+<h3>Exam Ongoing Dates</h3>
+<label>Start:</label>
+<input type="date" id="examStart"><br><br>
+<label>End:</label>
+<input type="date" id="examEnd"><br>
+<button onclick="saveExamDates()">Save Dates</button>
+<p id="examStatus"></p>
+</div>
+
+</div>
 </div>
 
 <script>
-function setDevice(t){localStorage.setItem("device",t);location.reload();}
+const ADMIN_PASSWORD="10009000XC";
+
+/* DEVICE */
+function setDevice(t){
+  localStorage.setItem("device",t);
+  location.reload();
+}
 function applyDevice(){
   const d=localStorage.getItem("device");
   if(!d){document.getElementById("deviceModal").style.display="flex";return;}
@@ -67,27 +124,89 @@ function applyDevice(){
 }
 applyDevice();
 
+/* ADMIN LOGIN */
+function adminLogin(){
+  const pass=prompt("Enter Admin Password:");
+  if(pass===ADMIN_PASSWORD){
+    document.getElementById("adminPanel").style.display="block";
+    updateStatus();
+  } else alert("Wrong Password");
+}
+
+/* TOGGLES */
+function toggleHoliday(){
+  let s=localStorage.getItem("holiday")==="true";
+  localStorage.setItem("holiday",!s);
+  updateStatus();
+}
+function toggleStudy(){
+  let s=localStorage.getItem("study")==="true";
+  localStorage.setItem("study",!s);
+  updateStatus();
+}
+function saveExamDates(){
+  const start=document.getElementById("examStart").value;
+  const end=document.getElementById("examEnd").value;
+  if(start && end){
+    localStorage.setItem("examStart",start);
+    localStorage.setItem("examEnd",end);
+    alert("Exam dates saved");
+  }
+  updateStatus();
+}
+
+/* STATUS UPDATE */
+function updateStatus(){
+  holidayStatus.innerText="Holiday: "+(localStorage.getItem("holiday")==="true");
+  studyStatus.innerText="Study Time: "+(localStorage.getItem("study")==="true");
+  const s=localStorage.getItem("examStart");
+  const e=localStorage.getItem("examEnd");
+  examStatus.innerText=s && e ? "Exam from "+s+" to "+e : "No exam set";
+}
+
+/* GET DAY IST */
 function getDayIST(){
   const d=new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
   if(d.getHours()<6)d.setDate(d.getDate()-1);
   return d.toLocaleString("en-US",{weekday:"long"});
 }
 
+/* GENERATE */
 function generate(){
   let day=getDayIST();
-  if(localStorage.getItem("holiday")==="true")day="Sunday";
+
+  if(localStorage.getItem("holiday")==="true"){
+    day="Sunday";
+  }
+
+  const today=new Date().toISOString().split("T")[0];
+  const start=localStorage.getItem("examStart");
+  const end=localStorage.getItem("examEnd");
+
+  let extra="";
+  if(start && end && today>=start && today<=end){
+    extra+="📘 Exam Ongoing Period<br>";
+  }
+
+  if(localStorage.getItem("study")==="true"){
+    extra+="📖 Study Time Active<br>";
+  }
+
   const lines=document.getElementById("schedule").value.split("\n");
   for(let l of lines){
     if(!l.includes("|"))continue;
     const p=l.split("|").map(x=>x.trim());
     if(p[0].toLowerCase()===day.toLowerCase()){
-      result.innerHTML=`<h3>${day}</h3><p>${p[1]}</p><p>${p[2]}</p>`;
+      result.innerHTML=`<h3>${day}</h3><p>${p[1]}</p><p>${p[2]}</p><br>${extra}`;
       return;
     }
   }
   result.innerText="No timing set";
 }
+
+/* INIT */
+updateStatus();
 </script>
+
 </body>
 </html>
-
