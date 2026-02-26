@@ -10,6 +10,7 @@ body{
   background:linear-gradient(135deg,#0f172a,#020617);
   color:#e5e7eb;
   padding:20px;
+  transition:0.3s;
 }
 .card{
   max-width:760px;
@@ -20,13 +21,38 @@ body{
   border:2px solid #22c55e;
 }
 button{
-  margin-top:10px;padding:12px;width:100%;
-  border:none;border-radius:10px;background:#22c55e;
+  margin-top:12px;
+  padding:12px;
+  width:100%;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  font-weight:bold;
+  cursor:pointer;
+}
+.admin-panel{
+  margin-top:20px;
+  padding:15px;
+  border:2px solid #22c55e;
+  border-radius:12px;
+}
+.panel-card{
+  background:#0f172a;
+  padding:12px;
+  margin-bottom:15px;
+  border-radius:10px;
+}
+.status-box{
+  margin-top:20px;
+  padding:15px;
+  border-radius:10px;
+  background:#111827;
 }
 </style>
 </head>
 <body>
 
+<!-- DEVICE SELECT -->
 <div id="deviceModal" style="display:none;position:fixed;inset:0;background:#020617;z-index:9999;align-items:center;justify-content:center;">
   <div style="border:2px solid #22c55e;padding:20px;border-radius:14px;text-align:center;">
     <h3>Select Device</h3><br>
@@ -37,45 +63,129 @@ button{
 
 <div class="card">
 <h1>🟢 SMP Status</h1>
-<div id="statusBox"></div>
+
+<div id="statusBox" class="status-box"></div>
 
 <button onclick="adminLogin()">🔐 Admin Login</button>
 
-<div id="adminPanel" style="display:none;">
-<label><input type="checkbox" id="holiday"> Holiday / No School</label>
-<button onclick="save()">Save</button>
+<div id="adminPanel" class="admin-panel" style="display:none;">
+<h2>Admin Controls</h2>
+
+<div class="panel-card">
+<h3>Holiday / No School</h3>
+<button onclick="toggleHoliday()">Toggle Holiday</button>
+<p id="holidayStatus"></p>
+</div>
+
+<div class="panel-card">
+<h3>Exam Study Time</h3>
+<button onclick="toggleStudy()">Toggle Study</button>
+<p id="studyStatus"></p>
+</div>
+
+<div class="panel-card">
+<h3>Exam Ongoing Dates</h3>
+<label>Start:</label>
+<input type="date" id="examStart"><br><br>
+<label>End:</label>
+<input type="date" id="examEnd"><br>
+<button onclick="saveExamDates()">Save Dates</button>
+<p id="examStatus"></p>
+</div>
+
 </div>
 </div>
 
 <script>
-const PASS="10009000XC";
-function adminLogin(){
-  if(prompt("Admin Password")==PASS){
-    sessionStorage.setItem("admin","1");
-    location.reload();
-  }else alert("Wrong password");
+const ADMIN_PASSWORD="10009000XC";
+
+/* DEVICE */
+function setDevice(t){
+  localStorage.setItem("device",t);
+  location.reload();
 }
-function setDevice(t){localStorage.setItem("device",t);location.reload();}
 function applyDevice(){
   const d=localStorage.getItem("device");
-  if(!d){deviceModal.style.display="flex";return;}
+  if(!d){
+    document.getElementById("deviceModal").style.display="flex";
+    return;
+  }
   document.body.classList.add(d);
 }
 applyDevice();
 
-function load(){
-  const h=localStorage.getItem("holiday")==="true";
-  statusBox.innerHTML=h?"🎉 Holiday Mode ON":"📚 Normal School Day";
-  if(sessionStorage.getItem("admin")){
-    adminPanel.style.display="block";
-    holiday.checked=h;
+/* ADMIN LOGIN */
+function adminLogin(){
+  const pass=prompt("Enter Admin Password:");
+  if(pass===ADMIN_PASSWORD){
+    document.getElementById("adminPanel").style.display="block";
+    updateStatus();
+  }else alert("Wrong Password");
+}
+
+/* TOGGLES */
+function toggleHoliday(){
+  let s=localStorage.getItem("holiday")==="true";
+  localStorage.setItem("holiday",!s);
+  refresh();
+}
+function toggleStudy(){
+  let s=localStorage.getItem("study")==="true";
+  localStorage.setItem("study",!s);
+  refresh();
+}
+function saveExamDates(){
+  const start=document.getElementById("examStart").value;
+  const end=document.getElementById("examEnd").value;
+  if(start && end){
+    localStorage.setItem("examStart",start);
+    localStorage.setItem("examEnd",end);
+    alert("Exam dates saved");
   }
+  refresh();
 }
-function save(){
-  localStorage.setItem("holiday",holiday.checked);
-  load();
+
+/* STATUS DISPLAY */
+function refresh(){
+  const holiday=localStorage.getItem("holiday")==="true";
+  const study=localStorage.getItem("study")==="true";
+  const start=localStorage.getItem("examStart");
+  const end=localStorage.getItem("examEnd");
+
+  const today=new Date().toISOString().split("T")[0];
+  let examActive=false;
+
+  if(start && end && today>=start && today<=end){
+    examActive=true;
+  }
+
+  let statusText="";
+
+  if(holiday){
+    statusText+="🎉 Holiday Mode Active<br>";
+  }else{
+    statusText+="📚 Normal School Day<br>";
+  }
+
+  if(study){
+    statusText+="📖 Study Time Enabled<br>";
+  }
+
+  if(examActive){
+    statusText+="📝 Exam Ongoing ("+start+" to "+end+")<br>";
+  }
+
+  document.getElementById("statusBox").innerHTML=statusText;
+
+  /* Admin panel status */
+  document.getElementById("holidayStatus").innerText="Holiday: "+holiday;
+  document.getElementById("studyStatus").innerText="Study: "+study;
+  document.getElementById("examStatus").innerText=
+    start && end ? "Exam from "+start+" to "+end : "No exam set";
 }
-load();
+
+refresh();
 </script>
+
 </body>
 </html>
