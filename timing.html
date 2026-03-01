@@ -7,38 +7,111 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
+
+body{
+  font-family:'Press Start 2P',cursive;
+  background:linear-gradient(135deg,#0f172a,#020617);
+  color:#e5e7eb;
+  padding:20px;
+}
+
+/* CARD */
+.card{
+  max-width:760px;
+  margin:auto;
+  background:#020617;
+  padding:24px;
+  border-radius:18px;
+  border:2px solid #22c55e;
+}
+
+/* INPUTS */
+textarea{
+  width:100%;
+  height:220px;
+  background:#020617;
+  color:white;
+  border-radius:10px;
+  border:1px solid #334155;
+  padding:10px;
+}
+
+button{
+  margin-top:15px;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+select{
+  width:100%;
+  padding:12px;
+  margin-bottom:15px;
+  border-radius:10px;
+  background:#020617;
+  color:white;
+  border:1px solid #22c55e;
+}
+
+/* POPUPS */
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.9);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.popup-box{
+  background:#020617;
+  padding:30px;
+  border-radius:12px;
+  text-align:center;
+  border:2px solid #22c55e;
+}
+
 </style>
 </head>
 
 <body>
-<!-- SMP SELECTOR -->
+
+<!-- ================= SMP SELECTOR ================= -->
 <div id="smpSelector" class="popup" style="display:none;">
   <div class="popup-box">
-    <h2>Select SMP</h2>
+    <h2>Select SMP</h2><br>
 
     <button onclick="selectSMP('NightCore SMP')">
       NightCore SMP
     </button>
+
   </div>
 </div>
-    
-<!-- DEVICE SELECT -->
+
+<!-- ================= DEVICE SELECT ================= -->
 <div id="deviceModal"
 style="display:none;position:fixed;inset:0;background:#020617;
 z-index:9999;align-items:center;justify-content:center;">
 
-<div style="border:2px solid #22c55e;padding:20px;border-radius:14px;text-align:center;">
+<div class="popup-box">
 <h3>Select Device</h3><br>
+
 <button onclick="setDevice('mobile')">📱 Mobile</button><br><br>
 <button onclick="setDevice('pc')">🖥 PC</button>
+
 </div>
 </div>
 
+<!-- ================= MAIN CARD ================= -->
 <div class="card">
 
 <h1>⏰ SMP Timings</h1>
 
-<!-- SMP SELECT -->
 <label>Select SMP</label>
 <select id="smpSelect">
 <option value="NightCore SMP">NightCore SMP</option>
@@ -62,62 +135,92 @@ Sunday | 11:00 AM - 1:00 PM | NightCore SMP
 
 <script>
 
-/* DEVICE SYSTEM */
-function setDevice(t){
-  localStorage.setItem("device",t);
+/* ================= DEVICE SYSTEM ================= */
+function setDevice(type){
+  localStorage.setItem("device",type);
   location.reload();
 }
+
 (function(){
-  const d=localStorage.getItem("device");
-  if(!d){
+  const device=localStorage.getItem("device");
+
+  if(!device){
     document.getElementById("deviceModal").style.display="flex";
   }else{
-    document.body.classList.add(d);
+    document.body.classList.add(device);
   }
 })();
 
-/* IST DAY SYSTEM */
+/* ================= SMP SELECTOR ================= */
+function selectSMP(name){
+  localStorage.setItem("selectedSMP",name);
+  document.getElementById("smpSelector").style.display="none";
+
+  document.getElementById("smpSelect").value=name;
+}
+
+window.addEventListener("load",()=>{
+
+  const smp=localStorage.getItem("selectedSMP");
+
+  if(!smp){
+    document.getElementById("smpSelector").style.display="flex";
+  }else{
+    document.getElementById("smpSelect").value=smp;
+  }
+
+});
+
+/* ================= IST DAY ================= */
 function getDayIST(){
+
   const d=new Date(
-    new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"})
+    new Date().toLocaleString(
+      "en-US",
+      {timeZone:"Asia/Kolkata"}
+    )
   );
 
   if(d.getHours()<6)
     d.setDate(d.getDate()-1);
 
-  return d.toLocaleString("en-US",{weekday:"long"});
+  return d.toLocaleString(
+    "en-US",
+    {weekday:"long"}
+  );
 }
 
-/* CHECK EXAM RANGE */
+/* ================= EXAM CHECK ================= */
 function examActive(){
+
   const start=localStorage.getItem("examStart");
   const end=localStorage.getItem("examEnd");
 
   if(!start || !end) return false;
 
-  const today=new Date().toISOString().split("T")[0];
+  const today=new Date()
+    .toISOString()
+    .split("T")[0];
+
   return today>=start && today<=end;
 }
 
-/* MAIN GENERATOR */
+/* ================= GENERATOR ================= */
 function generate(){
 
   let day=getDayIST();
 
-  const holiday =
+  const holiday=
     localStorage.getItem("holiday")==="true";
 
-  const study =
+  const study=
     localStorage.getItem("study")==="true";
 
   const exam=examActive();
 
-  /* ONLY HOLIDAY FORCES SUNDAY */
-  if(holiday){
-    day="Sunday";
-  }
+  if(holiday) day="Sunday";
 
-  const selectedSMP =
+  const selectedSMP=
     document.getElementById("smpSelect").value;
 
   const lines=
@@ -144,18 +247,19 @@ function generate(){
       if(exam)
         extra+="📝 Exams Ongoing<br>";
 
-      result.innerHTML=`
-      <h3>${selectedSMP}</h3>
-      <h2>${day}</h2>
-      <p>🕒 ${p[1]}</p>
-      ${extra}
+      document.getElementById("result").innerHTML=`
+        <h3>${selectedSMP}</h3>
+        <h2>${day}</h2>
+        <p>🕒 ${p[1]}</p>
+        ${extra}
       `;
 
       return;
     }
   }
 
-  result.innerText="No timing found";
+  document.getElementById("result").innerText=
+    "No timing found";
 }
 
 </script>
