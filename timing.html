@@ -9,71 +9,63 @@
 <style>
 
 body{
-  font-family:'Press Start 2P',cursive;
-  background:linear-gradient(135deg,#0f172a,#020617);
-  color:#e5e7eb;
-  padding:20px;
+font-family:'Press Start 2P',cursive;
+background:#020617;
+color:white;
+padding:20px;
 }
 
 /* CARD */
 .card{
-  max-width:760px;
-  margin:auto;
-  background:#020617;
-  padding:24px;
-  border-radius:18px;
-  border:2px solid #22c55e;
-}
-
-/* INPUTS */
-textarea{
-  width:100%;
-  height:220px;
-  background:#020617;
-  color:white;
-  border-radius:10px;
-  border:1px solid #334155;
-  padding:10px;
-}
-
-button{
-  margin-top:15px;
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:10px;
-  background:#22c55e;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-select{
-  width:100%;
-  padding:12px;
-  margin-bottom:15px;
-  border-radius:10px;
-  background:#020617;
-  color:white;
-  border:1px solid #22c55e;
+max-width:760px;
+margin:auto;
+background:#020617;
+padding:24px;
+border-radius:18px;
+border:2px solid #22c55e;
 }
 
 /* POPUPS */
 .popup{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.9);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#020617;
+display:none;
+justify-content:center;
+align-items:center;
+z-index:9999;
 }
 
 .popup-box{
-  background:#020617;
-  padding:30px;
-  border-radius:12px;
-  text-align:center;
-  border:2px solid #22c55e;
+border:2px solid #22c55e;
+padding:25px;
+border-radius:14px;
+text-align:center;
+}
+
+button{
+margin-top:10px;
+padding:12px;
+width:100%;
+border:none;
+border-radius:10px;
+background:#22c55e;
+font-weight:bold;
+cursor:pointer;
+}
+
+textarea{
+width:100%;
+height:200px;
+background:#020617;
+color:white;
+border:1px solid #334155;
+border-radius:10px;
+padding:10px;
+margin-top:10px;
 }
 
 </style>
@@ -81,41 +73,28 @@ select{
 
 <body>
 
-<!-- ================= SMP SELECTOR ================= -->
-<div id="smpSelector" class="popup" style="display:none;">
-  <div class="popup-box">
-    <h2>Select SMP</h2><br>
-
-    <button onclick="selectSMP('NightCore SMP')">
-      NightCore SMP
-    </button>
-
-  </div>
-</div>
-
-<!-- ================= DEVICE SELECT ================= -->
-<div id="deviceModal"
-style="display:none;position:fixed;inset:0;background:#020617;
-z-index:9999;align-items:center;justify-content:center;">
-
+<!-- DEVICE SELECT -->
+<div id="deviceModal" class="popup">
 <div class="popup-box">
-<h3>Select Device</h3><br>
-
-<button onclick="setDevice('mobile')">📱 Mobile</button><br><br>
+<h3>Select Device</h3>
+<button onclick="setDevice('mobile')">📱 Mobile</button>
 <button onclick="setDevice('pc')">🖥 PC</button>
-
 </div>
 </div>
 
-<!-- ================= MAIN CARD ================= -->
+<!-- SMP SELECT -->
+<div id="smpSelector" class="popup">
+<div class="popup-box">
+<h3>Select SMP</h3>
+<button onclick="selectSMP('NightCore SMP')">
+NightCore SMP
+</button>
+</div>
+</div>
+
 <div class="card">
 
 <h1>⏰ SMP Timings</h1>
-
-<label>Select SMP</label>
-<select id="smpSelect">
-<option value="NightCore SMP">NightCore SMP</option>
-</select>
 
 <textarea id="schedule">
 Monday | 3:30 PM - 6:00 PM | NightCore SMP
@@ -135,133 +114,96 @@ Sunday | 11:00 AM - 1:00 PM | NightCore SMP
 
 <script>
 
-/* ================= DEVICE SYSTEM ================= */
+/* DEVICE */
 function setDevice(type){
-  localStorage.setItem("device",type);
-  location.reload();
+localStorage.setItem("device",type);
+document.getElementById("deviceModal").style.display="none";
+checkSMP();
 }
 
-(function(){
-  const device=localStorage.getItem("device");
-
-  if(!device){
-    document.getElementById("deviceModal").style.display="flex";
-  }else{
-    document.body.classList.add(device);
-  }
-})();
-
-/* ================= SMP SELECTOR ================= */
+/* SMP */
 function selectSMP(name){
-  localStorage.setItem("selectedSMP",name);
-  document.getElementById("smpSelector").style.display="none";
-
-  document.getElementById("smpSelect").value=name;
+localStorage.setItem("selectedSMP",name);
+document.getElementById("smpSelector").style.display="none";
 }
 
-window.addEventListener("load",()=>{
+/* STARTUP FLOW */
+window.onload=function(){
 
-  const smp=localStorage.getItem("selectedSMP");
+const device=localStorage.getItem("device");
+const smp=localStorage.getItem("selectedSMP");
 
-  if(!smp){
-    document.getElementById("smpSelector").style.display="flex";
-  }else{
-    document.getElementById("smpSelect").value=smp;
-  }
+if(!device){
+document.getElementById("deviceModal").style.display="flex";
+return;
+}
 
-});
+if(!smp){
+document.getElementById("smpSelector").style.display="flex";
+}
 
-/* ================= IST DAY ================= */
+};
+
+/* IST DAY */
 function getDayIST(){
-
-  const d=new Date(
-    new Date().toLocaleString(
-      "en-US",
-      {timeZone:"Asia/Kolkata"}
-    )
-  );
-
-  if(d.getHours()<6)
-    d.setDate(d.getDate()-1);
-
-  return d.toLocaleString(
-    "en-US",
-    {weekday:"long"}
-  );
+const d=new Date(
+new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"})
+);
+if(d.getHours()<6)d.setDate(d.getDate()-1);
+return d.toLocaleString("en-US",{weekday:"long"});
 }
 
-/* ================= EXAM CHECK ================= */
+/* EXAM RANGE */
 function examActive(){
-
-  const start=localStorage.getItem("examStart");
-  const end=localStorage.getItem("examEnd");
-
-  if(!start || !end) return false;
-
-  const today=new Date()
-    .toISOString()
-    .split("T")[0];
-
-  return today>=start && today<=end;
+const start=localStorage.getItem("examStart");
+const end=localStorage.getItem("examEnd");
+if(!start||!end)return false;
+const today=new Date().toISOString().split("T")[0];
+return today>=start&&today<=end;
 }
 
-/* ================= GENERATOR ================= */
+/* GENERATOR */
 function generate(){
 
-  let day=getDayIST();
+let day=getDayIST();
 
-  const holiday=
-    localStorage.getItem("holiday")==="true";
+if(localStorage.getItem("holiday")==="true")
+day="Sunday";
 
-  const study=
-    localStorage.getItem("study")==="true";
+const study=localStorage.getItem("study")==="true";
+const exam=examActive();
+const smp=localStorage.getItem("selectedSMP");
 
-  const exam=examActive();
+const lines=document
+.getElementById("schedule")
+.value.split("\n");
 
-  if(holiday) day="Sunday";
+for(let l of lines){
 
-  const selectedSMP=
-    document.getElementById("smpSelect").value;
+if(!l.includes("|"))continue;
 
-  const lines=
-    document.getElementById("schedule")
-    .value.split("\n");
+const p=l.split("|").map(x=>x.trim());
 
-  for(let l of lines){
+if(p[0]===day && p[2]===smp){
 
-    if(!l.includes("|")) continue;
+let extra="";
+if(study)extra+="📖 Exam Study Time Active<br>";
+if(exam)extra+="📝 Exams Ongoing<br>";
 
-    const p=l.split("|").map(x=>x.trim());
+result.innerHTML=`
+<h3>${smp}</h3>
+<h2>${day}</h2>
+<p>${p[1]}</p>
+${extra}
+`;
+return;
+}
+}
 
-    if(
-      p[0].toLowerCase()===day.toLowerCase()
-      &&
-      p[2]===selectedSMP
-    ){
-
-      let extra="";
-
-      if(study)
-        extra+="📖 Exam Study Time Active<br>";
-
-      if(exam)
-        extra+="📝 Exams Ongoing<br>";
-
-      document.getElementById("result").innerHTML=`
-        <h3>${selectedSMP}</h3>
-        <h2>${day}</h2>
-        <p>🕒 ${p[1]}</p>
-        ${extra}
-      `;
-
-      return;
-    }
-  }
-
-  document.getElementById("result").innerText=
-    "No timing found";
+result.innerText="No timing found";
 }
 
 </script>
+
 </body>
 </html>
