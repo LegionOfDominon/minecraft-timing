@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin SMP Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Press Start 2P',cursive;background:linear-gradient(135deg,#0f172a,#020617);color:#e5e7eb;padding:20px}
+.card{max-width:900px;margin:auto;background:#020617;padding:24px;border-radius:18px;border:2px solid #22c55e}
+input,select,textarea{width:100%;padding:10px;margin:8px 0;background:#020617;color:#e5e7eb;border:1px solid #334155;border-radius:10px}
+button{padding:12px;border:none;border-radius:10px;background:#22c55e;color:#022c22;font-weight:bold;cursor:pointer;margin-top:8px;width:100%}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.list{margin-top:15px;border-top:1px solid #334155;padding-top:10px}
+.item{display:flex;justify-content:space-between;align-items:center;border:1px solid #334155;border-radius:10px;padding:10px;margin:8px 0}
+.small{font-size:10px;color:#94a3b8}
+</style>
+</head>
+<body>
+<div class="card">
+<h2>🔐 Admin Login</h2>
+<input id="pass" type="password" placeholder="Enter Admin Password">
+<button onclick="login()">Login</button>
+<div id="panel" style="display:none">
+<hr>
+<h2>🧩 SMP Manager</h2>
+<div class="row">
+<input id="smpName" placeholder="SMP Name">
+<select id="smpStatus">
+<option>Online</option>
+<option>Maintenance</option>
+<option>Offline</option>
+</select>
+</div>
+<textarea id="smpSchedule" rows="6" placeholder="Monday | 3:30 PM - 6:00 PM | SMP Name"></textarea>
+<button onclick="addSMP()">➕ Add / Update SMP</button>
+<div class="list" id="smpList"></div>
+<hr>
+<h2>📅 Global Modes</h2>
+<label><input type="checkbox" id="holiday"> Holiday / No School</label><br>
+<label><input type="checkbox" id="study"> Exam Study Time</label><br>
+<div class="row">
+<input type="date" id="examStart">
+<input type="date" id="examEnd">
+</div>
+<button onclick="saveGlobal()">💾 Save Global Settings</button>
+<p class="small">All settings persist using localStorage until changed.</p>
+</div>
+</div>
+<script>
+const PASS='10009000XC';
+function login(){
+ if(document.getElementById('pass').value===PASS){
+   sessionStorage.setItem('admin','1');
+   init();
+ }else alert('Wrong password');
+}
+function init(){
+ if(sessionStorage.getItem('admin')){
+   document.getElementById('panel').style.display='block';
+ }
+ loadGlobals();
+ render();
+}
+function getSMPs(){
+ return JSON.parse(localStorage.getItem('smps')||'[]');
+}
+function setSMPs(v){
+ localStorage.setItem('smps',JSON.stringify(v));
+}
+function addSMP(){
+ const name=document.getElementById('smpName').value.trim();
+ const status=document.getElementById('smpStatus').value;
+ const schedule=document.getElementById('smpSchedule').value;
+ if(!name) return alert('Enter SMP name');
+ let smps=getSMPs();
+ const i=smps.findIndex(s=>s.name===name);
+ const obj={name,status,schedule};
+ if(i>-1) smps[i]=obj; else smps.push(obj);
+ setSMPs(smps);
+ render();
+}
+function delSMP(name){
+ let smps=getSMPs().filter(s=>s.name!==name);
+ setSMPs(smps);
+ render();
+}
+function render(){
+ const box=document.getElementById('smpList');
+ const smps=getSMPs();
+ box.innerHTML='';
+ smps.forEach(s=>{
+  const d=document.createElement('div');
+  d.className='item';
+  d.innerHTML=`<div><b>${s.name}</b><br><span class='small'>${s.status}</span></div><button onclick="delSMP('${s.name}')">Delete</button>`;
+  box.appendChild(d);
+ });
+}
+function saveGlobal(){
+ localStorage.setItem('holiday',document.getElementById('holiday').checked);
+ localStorage.setItem('study',document.getElementById('study').checked);
+ localStorage.setItem('examStart',document.getElementById('examStart').value);
+ localStorage.setItem('examEnd',document.getElementById('examEnd').value);
+ alert('Saved');
+}
+function loadGlobals(){
+ document.getElementById('holiday').checked=localStorage.getItem('holiday')==='true';
+ document.getElementById('study').checked=localStorage.getItem('study')==='true';
+ document.getElementById('examStart').value=localStorage.getItem('examStart')||'';
+ document.getElementById('examEnd').value=localStorage.getItem('examEnd')||'';
+}
+init();
+</script>
+</body>
+</html>
